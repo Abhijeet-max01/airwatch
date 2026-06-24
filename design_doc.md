@@ -27,31 +27,32 @@ Air quality is a real, ongoing public health issue in Indian cities, and I wante
 ## 4. Architecture (Week 1 → Week 4 view)
 
 ```mermaid
-flowchart LR
-    subgraph Sources["Data Sources"]
-        A1[OpenAQ API<br/>Air Quality]
-        A2[OpenWeather API<br/>Added Week 3]
+flowchart TD
+    subgraph S1[" DATA SOURCES "]
+        A1[OpenAQ API]
+        A2[OpenWeather API<br/>Week 3]
     end
 
-    subgraph Ingest["Ingestion"]
-        B1[Python Script<br/>requests + auth + retries]
-    end
+    B1[Python Ingestion<br/>auth + retries]
 
-    subgraph Warehouse["Warehouse — Postgres"]
+    subgraph S2[" WAREHOUSE - Postgres "]
         C1[(raw_air_quality)]
         C2[(raw_weather)]
     end
 
-    subgraph Transform["Transformation — dbt"]
-        D1[Staging Models]
-        D2[Intermediate Models]
-        D3[Marts:<br/>pollution trends, AQI summary,<br/>pollution-weather correlation]
+    subgraph S3[" dbt TRANSFORMATION "]
+        D1[Staging]
+        D2[Intermediate]
+        D3[Marts]
     end
 
-    subgraph Serve["Dashboard"]
-        E1[Metabase<br/>local demo]
-        E2[Streamlit<br/>public live URL]
+    subgraph S4[" DASHBOARD "]
+        E1[Metabase<br/>local]
+        E2[Streamlit<br/>public URL]
     end
+
+    F[Scheduler:<br/>Airflow / GH Actions]
+    G[Docker Compose]
 
     A1 --> B1
     A2 --> B1
@@ -59,14 +60,26 @@ flowchart LR
     B1 --> C2
     C1 --> D1
     C2 --> D1
-    D1 --> D2
-    D2 --> D3
+    D1 --> D2 --> D3
     D3 --> E1
     D3 --> E2
-
-    F[Scheduler:<br/>Airflow local / GitHub Actions cloud] -.triggers.-> B1
-    G[Docker Compose] -.bundles.-> C1
+    F -.triggers.-> B1
+    G -.bundles.-> C1
     G -.bundles.-> E1
+
+    classDef src fill:#e3f2fd,stroke:#1565c0,stroke-width:2px
+    classDef ing fill:#fff3e0,stroke:#ef6c00,stroke-width:2px
+    classDef wh fill:#e8f5e9,stroke:#2e7d32,stroke-width:2px
+    classDef tr fill:#f3e5f5,stroke:#6a1b9a,stroke-width:2px
+    classDef dash fill:#fce4ec,stroke:#ad1457,stroke-width:2px
+    classDef ops fill:#eceff1,stroke:#455a64,stroke-width:2px
+
+    class A1,A2 src
+    class B1 ing
+    class C1,C2 wh
+    class D1,D2,D3 tr
+    class E1,E2 dash
+    class F,G ops
 ```
 
 ## 5. Tech Stack
