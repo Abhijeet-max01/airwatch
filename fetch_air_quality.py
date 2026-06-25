@@ -1,5 +1,6 @@
 import os
 import requests
+import psycopg2
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -14,8 +15,11 @@ cities = {
     "Chennai": 8558,
 }
 
+# connect to your local Postgres database
+conn = psycopg2.connect(host="localhost", database="airwatch", user="postgres")
+cur = conn.cursor()
+
 for city_name, location_id in cities.items():
-    # Step 1: ask this station which of its sensors is the PM2.5 one
     loc_url = f"https://api.openaq.org/v3/locations/{location_id}"
     loc_data = requests.get(loc_url, headers=headers).json()
 
@@ -26,15 +30,25 @@ for city_name, location_id in cities.items():
             break
 
     if pm25_sensor_id is None:
-        print(f"\n--- {city_name} --- no PM2.5 sensor found here")
+        print(f"{city_name}: no PM2.5 sensor found")
         continue
 
-    # Step 2: get the latest readings, then keep only the PM2.5 one
     latest_url = f"https://api.openaq.org/v3/locations/{location_id}/latest"
     latest_data = requests.get(latest_url, headers=headers).json()
 
     for reading in latest_data["results"]:
         if reading["sensorsId"] == pm25_sensor_id:
-            print(f"\n--- {city_name} ---")
-            print(f"PM2.5: {reading['value']} µg/m³  (recorded: {reading['datetime']['local']})")
+            value = reading["value"]
+            recorded_at = reading["datetime"]["local"]
+
+            cur.execute(
+                "INSERT INTO raw_air_quality (city, location_id, value, recorded_at) VALUES (%s, %s, %s, %s)",
+                (city_name, location_id, value, recorded_at)
+            )
+            print(f"Inserted {city_name}: {value} µg/m³")
             break
+
+conn.commit()
+cur.close()
+conn.close()
+print("Done — all rows saved.")
