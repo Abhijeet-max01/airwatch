@@ -23,30 +23,35 @@ for city_name, location_id in cities.items():
     loc_url = f"https://api.openaq.org/v3/locations/{location_id}"
     loc_data = requests.get(loc_url, headers=headers).json()
 
-    pm25_sensor_id = None
-    for sensor in loc_data["results"][0]["sensors"]:
-        if sensor["parameter"]["name"] == "pm25":
-            pm25_sensor_id = sensor["id"]
-            break
+    # collect ALL sensors that measure pm25 at this station — there can be more than one
+    pm25_sensor_ids = [
+        sensor["id"] for sensor in loc_data["results"][0]["sensors"]
+        if sensor["parameter"]["name"] == "pm25"
+    ]
 
-    if pm25_sensor_id is None:
+    if not pm25_sensor_ids:
         print(f"{city_name}: no PM2.5 sensor found")
         continue
 
     latest_url = f"https://api.openaq.org/v3/locations/{location_id}/latest"
     latest_data = requests.get(latest_url, headers=headers).json()
 
-    for reading in latest_data["results"]:
-        if reading["sensorsId"] == pm25_sensor_id:
-            value = reading["value"]
-            recorded_at = reading["datetime"]["local"]
+    # of all matching pm25 sensors, keep only the one with the MOST RECENT reading
+    pm25_readings = [r for r in latest_data["results"] if r["sensorsId"] in pm25_sensor_ids]
 
-            cur.execute(
-                "INSERT INTO raw_air_quality (city, location_id, value, recorded_at) VALUES (%s, %s, %s, %s)",
-                (city_name, location_id, value, recorded_at)
-            )
-            print(f"Inserted {city_name}: {value} µg/m³")
-            break
+    if not pm25_readings:
+        print(f"{city_name}: no recent PM2.5 reading found")
+        continue
+
+    best_reading = max(pm25_readings, key=lambda r: r["datetime"]["utc"])
+    value = best_reading["value"]
+    recorded_at = best_reading["datetime"]["local"]
+
+    cur.execute(
+        "INSERT INTO raw_air_quality (city, location_id, value, recorded_at) VALUES (%s, %s, %s, %s)",
+        (city_name, location_id, value, recorded_at)
+    )
+    print(f"Inserted {city_name}: {value} µg/m³ (recorded {recorded_at})")
 
 conn.commit()
 cur.close()
