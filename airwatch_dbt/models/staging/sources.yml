@@ -1,0 +1,7 @@
+version: 2
+
+sources:
+  - name: airwatch_raw
+    schema: public
+    tables:
+      - name: raw_air_quality
