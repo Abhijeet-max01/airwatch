@@ -1,0 +1,14 @@
+version: 2
+
+models:
+  - name: stg_air_quality
+    columns:
+      - name: city
+        tests:
+          - not_null
+      - name: pm25_value
+        tests:
+          - not_null
+      - name: recorded_at
+        tests:
+          - not_null
