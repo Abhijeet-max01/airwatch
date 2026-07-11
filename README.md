@@ -84,7 +84,7 @@ Every hour, a scheduled Python script queries OpenAQ's API for the latest PM2.5 
 
 | | Link |
 |---|---|
-| Live dashboard | *(deploying Week 4 — Streamlit Community Cloud)* |
+| Live dashboard |https://airwatch-india01.streamlit.app/|
 | Loom walkthrough | *(recording Week 4)* |
 
 ---
