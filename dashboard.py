@@ -1,6 +1,10 @@
+import os
 import psycopg2
 import pandas as pd
 import streamlit as st
+from dotenv import load_dotenv
+
+load_dotenv()
 
 # Page config
 st.set_page_config(
@@ -9,15 +13,11 @@ st.set_page_config(
     layout="wide"
 )
 
-# Connect to Postgres and load data
+# Connect to Supabase and load data
 @st.cache_data(ttl=3600)
 def load_data():
     try:
-        conn = psycopg2.connect(
-            host="localhost",
-            database="airwatch",
-            user="postgres"
-        )
+        conn = psycopg2.connect(os.getenv("SUPABASE_DB_URL"))
         df = pd.read_sql("""
             SELECT
                 city,
@@ -31,15 +31,17 @@ def load_data():
         """, conn)
         conn.close()
         return df
-    except:
+    except Exception as e:
+        st.warning(f"Using sample data — database connection unavailable: {e}")
         return pd.DataFrame({
             'city': ['Delhi', 'Mumbai', 'Bengaluru', 'Kolkata', 'Chennai'],
-            'reading_date': ['2026-07-11'] * 5,
+            'reading_date': ['2026-07-18'] * 5,
             'avg_pm25': [44.0, 26.0, 33.02, 65.1, 23.0],
             'max_pm25': [44.0, 26.0, 33.02, 65.1, 23.0],
             'num_readings': [3, 2, 3, 4, 3],
             'likely_sensor_error': [False, False, False, False, False]
         })
+
 df = load_data()
 
 # Header
