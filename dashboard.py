@@ -17,7 +17,8 @@ st.set_page_config(
 @st.cache_data(ttl=3600)
 def load_data():
     try:
-        conn = psycopg2.connect(os.getenv("SUPABASE_DB_URL"))
+        db_url = st.secrets.get("SUPABASE_DB_URL") or os.getenv("SUPABASE_DB_URL")
+        conn = psycopg2.connect(db_url)
         df = pd.read_sql("""
             SELECT
                 city,
