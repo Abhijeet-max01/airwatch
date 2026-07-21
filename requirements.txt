@@ -5,3 +5,4 @@ pandas
 streamlit
 dbt-core
 dbt-postgres
+plotly
