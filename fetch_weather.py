@@ -14,7 +14,10 @@ cities = {
     "Chennai": "Chennai,IN",
 }
 
-conn = psycopg2.connect(host="localhost", database="airwatch", user="postgres")
+db_url = os.getenv("SUPABASE_DB_URL")
+conn = psycopg2.connect(db_url) if db_url else psycopg2.connect(
+    host="localhost", database="airwatch", user="postgres"
+)
 cur = conn.cursor()
 
 for city_name, query in cities.items():

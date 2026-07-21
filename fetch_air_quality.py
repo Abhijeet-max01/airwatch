@@ -11,12 +11,15 @@ cities = {
     "Delhi": 8118,
     "Mumbai": 6967,
     "Bengaluru": 3409434,
-    "Kolkata": 1236037,
+    "Kolkata": 6950,
     "Chennai": 8558,
 }
 
 # connect to your local Postgres database
-conn = psycopg2.connect(host="localhost", database="airwatch", user="postgres")
+db_url = os.getenv("SUPABASE_DB_URL")
+conn = psycopg2.connect(db_url) if db_url else psycopg2.connect(
+    host="localhost", database="airwatch", user="postgres"
+)
 cur = conn.cursor()
 
 for city_name, location_id in cities.items():
