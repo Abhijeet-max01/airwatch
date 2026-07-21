@@ -3,7 +3,6 @@ import psycopg2
 import pandas as pd
 import streamlit as st
 import plotly.express as px
-import plotly.graph_objects as go
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -34,7 +33,7 @@ def load_data():
         df['reading_date'] = pd.to_datetime(df['reading_date'])
         return df
     except Exception as e:
-        st.warning(f"Database unavailable — showing sample data. Error: {e}")
+        st.warning(f"Database unavailable — {e}")
         return pd.DataFrame({
             'city': ['Delhi', 'Mumbai', 'Bengaluru', 'Kolkata', 'Chennai'] * 3,
             'reading_date': pd.to_datetime(
@@ -48,8 +47,32 @@ def load_data():
             'likely_sensor_error': [False] * 15
         })
 
+@st.cache_data(ttl=1800)
+def load_correlation():
+    try:
+        db_url = st.secrets.get("SUPABASE_DB_URL") or os.getenv("SUPABASE_DB_URL")
+        conn = psycopg2.connect(db_url)
+        df = pd.read_sql("""
+            SELECT
+                city,
+                reading_date,
+                avg_pm25,
+                avg_temp,
+                avg_humidity,
+                avg_wind_speed,
+                weather_pollution_pattern
+            FROM mart_pollution_weather_correlation
+            ORDER BY city, reading_date
+        """, conn)
+        conn.close()
+        df['reading_date'] = pd.to_datetime(df['reading_date'])
+        return df
+    except Exception as e:
+        return pd.DataFrame()
+
 df = load_data()
 clean_df = df[df["likely_sensor_error"] == False]
+corr_df = load_correlation()
 
 # Header
 st.title("AirWatch — India Air Quality Monitor")
@@ -106,6 +129,7 @@ if not filtered.empty:
         margin=dict(t=20, b=20),
         xaxis_title="Date",
         yaxis_title="PM2.5 (µg/m³)",
+        yaxis_range=[0, clean_df["avg_pm25"].max() * 1.1],
         legend_title="City",
         hovermode="x unified"
     )
@@ -116,7 +140,7 @@ else:
 st.divider()
 
 # City ranking
-st.subheader("City Rankings — Average PM2.5 (All Time)")
+st.subheader("City Rankings — Average PM2.5")
 ranking = clean_df.groupby("city")["avg_pm25"].mean().round(2).sort_values(ascending=False).reset_index()
 ranking.columns = ["City", "Average PM2.5 (µg/m³)"]
 ranking.index = ranking.index + 1
@@ -124,7 +148,47 @@ st.dataframe(ranking, use_container_width=True)
 
 st.divider()
 
-# Full data table
+# Weather correlation section
+st.subheader("Weather — Pollution Correlation")
+st.caption("Does wind speed or humidity correlate with cleaner or more polluted air? Joined daily from OpenWeather + OpenAQ.")
+
+if not corr_df.empty:
+    pattern_counts = corr_df['weather_pollution_pattern'].value_counts().reset_index()
+    pattern_counts.columns = ['Pattern', 'Count']
+
+    col1, col2 = st.columns([1, 2])
+
+    with col1:
+        st.markdown("**Observed Patterns**")
+        st.dataframe(pattern_counts, use_container_width=True, hide_index=True)
+
+    with col2:
+        fig2 = px.scatter(
+            corr_df,
+            x="avg_wind_speed",
+            y="avg_pm25",
+            color="city",
+            size="avg_humidity",
+            hover_data=["reading_date", "weather_pollution_pattern"],
+            labels={
+                "avg_wind_speed": "Wind Speed (m/s)",
+                "avg_pm25": "PM2.5 (µg/m³)",
+                "avg_humidity": "Humidity (%)",
+                "city": "City"
+            },
+            title="Wind Speed vs PM2.5 — bubble size = humidity"
+        )
+        fig2.update_layout(
+            height=350,
+            margin=dict(t=40, b=20),
+        )
+        st.plotly_chart(fig2, use_container_width=True)
+else:
+    st.info("Correlation data loading — both pipelines running since 18 July.")
+
+st.divider()
+
+# Raw data table
 st.subheader("Raw Data")
 show_flagged = st.checkbox("Include flagged sensor readings", value=False)
 display_df = df if show_flagged else clean_df
@@ -134,4 +198,4 @@ st.dataframe(
 )
 
 st.divider()
-st.caption("Built by Abhijeet Sirohi · B.Tech CSE-AIDE · AirWatch v1.0 · Data: OpenAQ (government sensors)")
+st.caption("Built by Abhijeet Sirohi · B.Tech CSE-AIDE · AirWatch v1.0 · Data: OpenAQ (government sensors) + OpenWeather")
