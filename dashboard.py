@@ -70,18 +70,52 @@ def load_correlation():
     except Exception as e:
         return pd.DataFrame()
 
+def get_recommendation(pm25):
+    if pm25 <= 30:
+        return "Good", "Safe for all outdoor activities including exercise.", "#22c55e"
+    elif pm25 <= 60:
+        return "Satisfactory", "Acceptable. Sensitive individuals should limit prolonged outdoor exertion.", "#84cc16"
+    elif pm25 <= 90:
+        return "Moderate", "Children and elderly should avoid outdoor exertion.", "#eab308"
+    elif pm25 <= 120:
+        return "Poor", "Reduce outdoor activities. Wear a mask if going outside.", "#f97316"
+    elif pm25 <= 250:
+        return "Very Poor", "Avoid going outside. Keep windows closed.", "#ef4444"
+    else:
+        return "Severe", "Health emergency. Do not go outside.", "#7c3aed"
+
 df = load_data()
 clean_df = df[df["likely_sensor_error"] == False]
 corr_df = load_correlation()
+latest = clean_df.sort_values("reading_date").groupby("city").last().reset_index()
 
 # Header
 st.title("AirWatch — India Air Quality Monitor")
 st.caption("PM2.5 pollution tracking across 5 Indian cities · Source: OpenAQ government sensor network · Updated hourly")
 st.divider()
 
+# Should you go outside
+st.subheader("Should You Go Outside Today?")
+st.caption("Based on current PM2.5 levels and India's National AQI standards.")
+
+if not latest.empty:
+    rec_cols = st.columns(5)
+    for i, row in latest.iterrows():
+        category, advice, color = get_recommendation(row['avg_pm25'])
+        with rec_cols[i % 5]:
+            st.markdown(f"""
+                <div style="border: 1px solid {color}; border-radius: 8px; padding: 12px; margin-bottom: 8px;">
+                    <div style="color: {color}; font-weight: bold; font-size: 14px;">{row['city']}</div>
+                    <div style="color: {color}; font-size: 20px; font-weight: bold; margin: 4px 0;">{category}</div>
+                    <div style="color: #9ca3af; font-size: 12px;">{row['avg_pm25']} µg/m³</div>
+                    <div style="color: #d1d5db; font-size: 12px; margin-top: 8px;">{advice}</div>
+                </div>
+            """, unsafe_allow_html=True)
+
+st.divider()
+
 # Latest readings
 st.subheader("Latest Readings")
-latest = clean_df.sort_values("reading_date").groupby("city").last().reset_index()
 cols = st.columns(5)
 for i, row in latest.iterrows():
     with cols[i % 5]:
@@ -143,12 +177,18 @@ st.divider()
 st.subheader("City Rankings — Average PM2.5")
 ranking = clean_df.groupby("city")["avg_pm25"].mean().round(2).sort_values(ascending=False).reset_index()
 ranking.columns = ["City", "Average PM2.5 (µg/m³)"]
+ranking["Verdict"] = ranking["Average PM2.5 (µg/m³)"].apply(
+    lambda x: "Good" if x <= 30 else
+              "Satisfactory" if x <= 60 else
+              "Moderate" if x <= 90 else
+              "Poor" if x <= 120 else "Very Poor"
+)
 ranking.index = ranking.index + 1
 st.dataframe(ranking, use_container_width=True)
 
 st.divider()
 
-# Weather correlation section
+# Weather correlation
 st.subheader("Weather — Pollution Correlation")
 st.caption("Does wind speed or humidity correlate with cleaner or more polluted air? Joined daily from OpenWeather + OpenAQ.")
 
@@ -188,7 +228,7 @@ else:
 
 st.divider()
 
-# Raw data table
+# Raw data
 st.subheader("Raw Data")
 show_flagged = st.checkbox("Include flagged sensor readings", value=False)
 display_df = df if show_flagged else clean_df

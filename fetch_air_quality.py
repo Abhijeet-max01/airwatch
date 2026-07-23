@@ -16,10 +16,11 @@ cities = {
 }
 
 # connect to your local Postgres database
-db_url = os.getenv("SUPABASE_DB_URL")
-conn = psycopg2.connect(db_url) if db_url else psycopg2.connect(
-    host="localhost", database="airwatch", user="postgres"
-)
+supabase_url = os.getenv("SUPABASE_DB_URL")
+if supabase_url:
+    conn = psycopg2.connect(supabase_url)
+else:
+    conn = psycopg2.connect(host="localhost", database="airwatch", user="postgres")
 cur = conn.cursor()
 
 for city_name, location_id in cities.items():
