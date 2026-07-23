@@ -6,3 +6,4 @@ streamlit
 dbt-core
 dbt-postgres
 plotly
+scikit-learn
