@@ -17,53 +17,85 @@ st.set_page_config(
 
 st.markdown("""
 <style>
-    .stApp {
-        background-color: #f5f7f9;
-        color: #111827;
+    /* Main Streamlit page background */
+    html, body, [data-testid="stAppViewContainer"], .stApp {
+        background: #172033 !important;
+        color: #f8fafc !important;
     }
+
+    [data-testid="stHeader"] {
+        background: #0f172a !important;
+    }
+
+    [data-testid="stToolbar"] {
+        background: transparent !important;
+    }
+
+    [data-testid="stMainBlockContainer"],
     .block-container {
         padding-top: 2rem;
         padding-bottom: 2rem;
     }
+
+    /* Main text */
+    h1, h2, h3, p, label {
+        color: #f8fafc !important;
+    }
+
     h1 {
-        color: #111827 !important;
         font-size: 30px !important;
         font-weight: 800 !important;
-        border-left: 4px solid #16a34a;
+        border-left: 5px solid #22c55e;
         padding-left: 14px;
-        margin-left: 2px;
         line-height: 1.4 !important;
         margin-bottom: 4px !important;
     }
+
     h2, h3 {
-        color: #111827 !important;
         font-weight: 700 !important;
     }
-    .card {
-        background: #ffffff;
-        border: 1px solid #e5e7eb;
-        border-radius: 10px;
+
+    /* Normal Streamlit text and captions */
+    [data-testid="stCaptionContainer"],
+    .stCaption,
+    [data-testid="stMarkdownContainer"] p {
+        color: #cbd5e1 !important;
+    }
+
+    /* Cards */
+    .card,
+    .forecast-card {
+        background: #f8fafc !important;
+        border: 1px solid #94a3b8;
+        border-radius: 12px;
         padding: 16px;
         text-align: center;
         height: 100%;
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.18);
     }
+
     .card-value {
         font-size: 28px;
         font-weight: 800;
-        color: #111827;
         margin: 6px 0 2px 0;
     }
+
+    .card-unit,
+    .card-city {
+        color: #64748b !important;
+    }
+
     .card-unit {
         font-size: 12px;
-        color: #6b7280;
         margin-bottom: 6px;
     }
+
     .card-city {
         font-size: 13px;
-        font-weight: 600;
-        color: #6b7280;
+        font-weight: 700;
         margin-bottom: 4px;
     }
+
     .card-category {
         font-size: 13px;
         font-weight: 700;
@@ -72,50 +104,80 @@ st.markdown("""
         display: inline-block;
         margin-top: 4px;
     }
-    .forecast-card {
-        background: #ffffff;
-        border: 1.5px dashed #d1d5db;
-        border-radius: 10px;
-        padding: 16px;
-        text-align: center;
-    }
+
     .forecast-value {
         font-size: 24px;
         font-weight: 800;
         margin: 6px 0 2px 0;
     }
+
     .section-title {
-        font-size: 16px;
+        font-size: 17px;
         font-weight: 700;
-        color: #111827;
+        color: #f8fafc !important;
         margin-bottom: 4px;
         padding-bottom: 6px;
-        border-bottom: 2px solid #16a34a;
+        border-bottom: 3px solid #22c55e;
         display: inline-block;
     }
+
+    /* Tabs */
     .stTabs [data-baseweb="tab-list"] {
         gap: 8px;
-        background-color: #ffffff;
+        background: #26334d !important;
         border-radius: 10px;
-        padding: 6px;
-        border: 1px solid #e5e7eb;
+        padding: 7px;
+        border: 1px solid #475569;
     }
+
     .stTabs [data-baseweb="tab"] {
-        color: #6b7280;
-        font-weight: 600;
-        border-radius: 6px;
+        background: #334155 !important;
+        color: #e2e8f0 !important;
+        font-weight: 700;
+        border-radius: 7px;
+        padding-left: 18px;
+        padding-right: 18px;
     }
+
+    .stTabs [data-baseweb="tab"] p {
+        color: #e2e8f0 !important;
+    }
+
     .stTabs [aria-selected="true"] {
-        background-color: #16a34a !important;
+        background: #16a34a !important;
         color: #ffffff !important;
     }
-    .stDataFrame {
-        border: 1px solid #e5e7eb;
-        border-radius: 8px;
-        background: #ffffff;
+
+    .stTabs [aria-selected="true"] p {
+        color: #ffffff !important;
     }
-    .stCaption {
-        color: #9ca3af !important;
+
+    /* Inputs */
+    [data-baseweb="select"] > div,
+    [data-testid="stMultiSelect"] div[data-baseweb="select"] > div {
+        background: #f8fafc !important;
+        color: #111827 !important;
+    }
+
+    /* Metrics */
+    [data-testid="stMetric"] {
+        background: #f8fafc;
+        border: 1px solid #94a3b8;
+        padding: 14px;
+        border-radius: 10px;
+    }
+
+    [data-testid="stMetricLabel"] p,
+    [data-testid="stMetricValue"] {
+        color: #111827 !important;
+    }
+
+    /* Tables */
+    [data-testid="stDataFrame"] {
+        background: #f8fafc !important;
+        border: 1px solid #94a3b8;
+        border-radius: 8px;
+        overflow: hidden;
     }
 </style>
 """, unsafe_allow_html=True)
@@ -300,11 +362,11 @@ with tab1:
                        annotation_text="WHO guideline", annotation_font_color="#9ca3af")
     fig_rank.update_layout(
         height=260,
-        plot_bgcolor="#ffffff",
-        paper_bgcolor="#ffffff",
-        font_color="#111827",
-        xaxis=dict(showgrid=True, gridcolor="#f3f4f6", title="Average PM2.5 (µg/m³)"),
-        yaxis=dict(showgrid=False),
+        plot_bgcolor="#f8fafc",
+        paper_bgcolor="#26334d",
+        font_color="#f8fafc",
+        xaxis=dict(showgrid=True, gridcolor="#cbd5e1", title="Average PM2.5 (µg/m³)", tickfont=dict(color="#111827"), title_font=dict(color="#111827")),
+        yaxis=dict(showgrid=False, tickfont=dict(color="#111827")),
         margin=dict(t=10, b=10, l=10, r=80),
         bargap=0.3
     )
@@ -335,11 +397,11 @@ with tab2:
                       annotation_font_color="#9ca3af")
         fig.update_layout(
             height=400,
-            plot_bgcolor="#ffffff",
-            paper_bgcolor="#f5f7f9",
-            font_color="#111827",
-            xaxis=dict(showgrid=True, gridcolor="#f3f4f6", title="Date"),
-            yaxis=dict(showgrid=True, gridcolor="#f3f4f6",
+            plot_bgcolor="#f8fafc",
+            paper_bgcolor="#26334d",
+            font_color="#f8fafc",
+            xaxis=dict(showgrid=True, gridcolor="#cbd5e1", title="Date"),
+            yaxis=dict(showgrid=True, gridcolor="#cbd5e1",
                        title="PM2.5 (µg/m³)",
                        range=[0, clean_df["avg_pm25"].max() * 1.15]),
             legend=dict(
@@ -349,7 +411,10 @@ with tab2:
                 xanchor="left",
                 x=0,
                 title="",
-                font=dict(color="#111827")
+                font=dict(color="#111827", size=12),
+                bgcolor="rgba(248,250,252,1)",
+                bordercolor="#94a3b8",
+                borderwidth=1
             ),
             hovermode="x unified",
             margin=dict(t=40, b=20, r=20)
@@ -462,13 +527,19 @@ with tab3:
             )
             fig2.update_layout(
                 height=380,
-                plot_bgcolor="#ffffff",
-                paper_bgcolor="#f5f7f9",
-                font_color="#111827",
-                xaxis=dict(showgrid=True, gridcolor="#f3f4f6"),
-                yaxis=dict(showgrid=True, gridcolor="#f3f4f6",
+                plot_bgcolor="#f8fafc",
+                paper_bgcolor="#26334d",
+                font_color="#f8fafc",
+                xaxis=dict(showgrid=True, gridcolor="#cbd5e1"),
+                yaxis=dict(showgrid=True, gridcolor="#cbd5e1",
                            range=[0, corr_df["avg_pm25"].max() * 1.15]),
-                legend=dict(font=dict(color="#111827"), title=""),
+                legend=dict(
+                    font=dict(color="#111827", size=12),
+                    title="",
+                    bgcolor="rgba(248,251,255,0.96)",
+                    bordercolor="#94a3b8",
+                    borderwidth=1
+                ),
                 margin=dict(t=40, b=20)
             )
             st.plotly_chart(fig2, use_container_width=True)
