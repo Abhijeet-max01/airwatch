@@ -1,1 +1,9 @@
-.env
+﻿.env
+.venv/
+__pycache__/
+*.pyc
+logs/
+*.log
+target/
+dbt_packages/
+stations_raw.json
