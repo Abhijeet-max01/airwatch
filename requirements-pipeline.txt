@@ -1,0 +1,11 @@
+# Pinned versions for the automated pipeline (ingest -> anomaly detection -> dbt).
+# Dashboard-only packages (streamlit, plotly) are deliberately left out to keep CI fast.
+requests==2.34.2
+python-dotenv==1.2.4
+psycopg2-binary==2.9.13
+pandas==3.1.0
+numpy==2.5.4
+scikit-learn==1.9.1
+pyyaml==6.0.3
+dbt-core==1.12.6
+dbt-postgres==1.11.0

@@ -1,0 +1,38 @@
+name: Refresh station list
+
+on:
+  schedule:
+    - cron: "40 20 * * *"     # daily at 20:40 UTC (02:10 IST)
+  workflow_dispatch:
+
+concurrency:
+  group: airwatch-pipeline
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      OPENAQ_API_KEY: ${{ secrets.OPENAQ_API_KEY }}
+      SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: requirements-pipeline.txt
+
+      - name: Install dependencies
+        run: pip install -r requirements-pipeline.txt
+
+      - name: Discover active PM2.5 stations in India
+        run: python pipeline/discover_stations.py
+
+      - name: Load stations into the database
+        run: python pipeline/load_stations.py
