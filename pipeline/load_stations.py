@@ -1,4 +1,4 @@
-﻿import os, json
+import os, json
 import psycopg2
 from psycopg2.extras import execute_values
 from collections import Counter

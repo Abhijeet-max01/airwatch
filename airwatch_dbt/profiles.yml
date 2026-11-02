@@ -1,0 +1,15 @@
+# Credentials come from environment variables (set by run_dbt.py from your .env file).
+# No secrets are stored in this file, so it is safe to commit.
+airwatch_dbt:
+  target: prod
+  outputs:
+    prod:
+      type: postgres
+      host: "{{ env_var('DBT_HOST') }}"
+      port: "{{ env_var('DBT_PORT') | as_number }}"
+      user: "{{ env_var('DBT_USER') }}"
+      password: "{{ env_var('DBT_PASSWORD') }}"
+      dbname: "{{ env_var('DBT_DBNAME') }}"
+      schema: public
+      threads: 4
+      connect_timeout: 15

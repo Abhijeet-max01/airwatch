@@ -1,0 +1,35 @@
+version: 2
+
+models:
+  - name: stg_pm25_hourly
+    columns:
+      - name: location_id
+        data_tests: [not_null]
+      - name: pm25
+        data_tests: [not_null]
+
+  - name: int_station_quality
+    columns:
+      - name: location_id
+        data_tests: [unique, not_null]
+      - name: is_usable
+        data_tests: [not_null]
+
+  - name: mart_station_quality
+    columns:
+      - name: quality_note
+        data_tests:
+          - accepted_values:
+              arguments:
+                values: ['ok', 'frozen sensor', 'too many gaps']
+
+  - name: mart_city_daily
+    columns:
+      - name: city
+        data_tests: [not_null]
+      - name: aqi_category
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: ['Good', 'Satisfactory', 'Moderate', 'Poor', 'Very Poor', 'Severe']

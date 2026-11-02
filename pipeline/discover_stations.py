@@ -1,4 +1,4 @@
-﻿import os, json, time
+import os, json, time
 import requests
 from collections import Counter
 from datetime import datetime, timezone, timedelta

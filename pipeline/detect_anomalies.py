@@ -1,4 +1,4 @@
-﻿"""Anomaly detection for hourly PM2.5 readings.
+"""Anomaly detection for hourly PM2.5 readings.
 
 Three detectors, combined:
   1. Hampel filter  - robust z-score vs the station's own rolling median (adapts per station)

@@ -1,0 +1,7 @@
+category,pm25_min,pm25_max,sort_order
+Good,0,30,1
+Satisfactory,30,60,2
+Moderate,60,90,3
+Poor,90,120,4
+Very Poor,120,250,5
+Severe,250,100000,6

@@ -1,0 +1,14 @@
+﻿# AirWatch pipeline settings - change behaviour here, not in the code.
+database_url_env: SUPABASE_DB_URL     # name of the environment variable holding the DB URL
+
+selection:
+  top_cities: 10          # use the N cities with the most active stations
+  stations_per_city: 3    # stations monitored per city
+  max_frozen_share: 0.20  # skip stations where more than 20% of readings are stuck
+
+ingest:
+  backfill_days: 90       # history to load the first time a station is seen
+  pause_seconds: 1.2      # delay between API calls (OpenAQ free tier ~60/min)
+  max_retries: 5
+  timeout_seconds: 30
+  page_size: 1000

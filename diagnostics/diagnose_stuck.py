@@ -1,4 +1,4 @@
-﻿import os
+import os
 from collections import Counter
 import psycopg2
 from dotenv import load_dotenv

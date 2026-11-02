@@ -1,16 +1,7 @@
-
-# Name your project! Project names should contain only lowercase characters
-# and underscores. A good package name should reflect your organization's
-# name or the intended use of these models
 name: 'airwatch_dbt'
-version: '1.0.0'
-
-# This setting configures which "profile" dbt uses for this project.
+version: '2.0.0'
 profile: 'airwatch_dbt'
 
-# These configurations specify where dbt should look for different types of files.
-# The `model-paths` config, for example, states that models in this project can be
-# found in the "models/" directory. You probably won't need to change these!
 model-paths: ["models"]
 analysis-paths: ["analyses"]
 test-paths: ["tests"]
@@ -18,19 +9,26 @@ seed-paths: ["seeds"]
 macro-paths: ["macros"]
 snapshot-paths: ["snapshots"]
 
-clean-targets:         # directories to be removed by `dbt clean`
+clean-targets:
   - "target"
   - "dbt_packages"
 
+# Thresholds live here, not inside SQL. Change a number, rebuild, done.
+vars:
+  max_frozen_share: 0.20     # a station is unusable if more than 20% of its readings are stuck
+  min_coverage: 0.50         # ...or if it reports fewer than 50% of the hours in its own history
+  min_hours_per_day: 18      # a city-day needs 18+ hourly values to count as complete
+  naaqs_pm25_24h: 60         # India's national 24-hour PM2.5 standard (ug/m3)
+  profile_days: 30           # window for the "best hour of day" profile
+  leaderboard_days: 30       # window for the city leaderboard
+  max_data_age_hours: 12     # freshness warning threshold
 
-# Configuring models
-# Full documentation: https://docs.getdbt.com/docs/configuring-models
-
-# In this example config, we tell dbt to build all models in the example/
-# directory as views. These settings can be overridden in the individual model
-# files using the `{{ config(...) }}` macro.
 models:
   airwatch_dbt:
-    # Config indicated by + and applies to all files under models/example/
-    example:
-      +materialized: view
+    v2:
+      staging:
+        +materialized: view
+      intermediate:
+        +materialized: view
+      marts:
+        +materialized: table

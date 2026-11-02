@@ -1,0 +1,13 @@
+version: 2
+
+sources:
+  - name: airwatch_pipeline
+    description: Tables written by the Python pipeline (pipeline/*.py).
+    schema: public
+    tables:
+      - name: stations
+        description: Every PM2.5 station OpenAQ lists for India, refreshed by load_stations.py.
+      - name: pm25_hourly
+        description: Hourly PM2.5 readings (ug/m3). Primary key (location_id, sensor_id, ts) prevents duplicates.
+      - name: pm25_anomalies
+        description: Readings flagged by detect_anomalies.py (spike, stuck sensor, Isolation Forest).
